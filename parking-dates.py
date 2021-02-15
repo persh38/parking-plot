@@ -3,6 +3,8 @@
 
 """
 Created on Mon Apr 22 14:52:18 2019
+Major rewrite and simplification 15-2-2020
+Now uses calplot which supersedes caldates
 
 @author: persh
 
@@ -11,18 +13,15 @@ days where we were absent.
 The photos are all in my Google calendar album "Parking voitures"
 and the absent dates are extracted from my Google calendar "absent from Tartegnin"
 
-    The class CalDates does most of the operations based on Pandas time series
-    and dataframes.
 
-     19-5-2019
 """
 
 from datetime import date
-
 import calplot
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import os
+# local class:
 import glib
 
 
@@ -61,10 +60,12 @@ class GoogleDates:
 
 class CarParkPlot:
     """
-    class to generate barplot and heatmap plots
+    class to generate barplot and heatmaps in folder 'plots'
     """
 
-    def __init__(self):
+    def __init__(self, folder):
+        self.folder = folder
+        os.makedirs(folder, exist_ok=True)  # succeeds even if directory exists.
         return
 
     def year(self, cars_df):
@@ -73,7 +74,7 @@ class CarParkPlot:
         yearcount = cars_df.groupby('year')['year'].count().to_frame('count')
         yearcount.plot(kind='bar', title=(f'Parking days per year up to {p_now}'))
         # plt.show()
-        plt.savefig('plots/years_count.png')
+        plt.savefig(os.path.join(self.folder, 'years_count.png'))
         plt.close()
         return
 
@@ -94,7 +95,7 @@ class CarParkPlot:
                 f'Year {yr}  Parking days observed: {ccount}, (Absent: {vcount} days)'
         plt.title(title)
         # plt.show()
-        file_name = f'plots/calendar_{yr}.png'
+        file_name = os.path.join(self.folder, f'calendar_{yr}.png')
         plt.savefig(file_name)
         plt.close()
         return
@@ -114,6 +115,7 @@ if __name__ == "__main__":
 
     # constants
     START_YEAR = 2016
+    PLOT_FOLDER = 'plots'
     CALENDAR = 'Not in Tartegnin'
     PARKING = 'Parking voitures'
 
@@ -127,7 +129,7 @@ if __name__ == "__main__":
 
     # get objects of google dates and carpark plot classes
     cars = GoogleDates(gl)
-    plots = CarParkPlot()
+    plots = CarParkPlot(PLOT_FOLDER)
 
     # Read dates of all photos of parking and plot the distribution per year
 
@@ -141,5 +143,5 @@ if __name__ == "__main__":
     abdates_df = cars.get_absence_dates(CALENDAR)
     for year in range(START_YEAR, this_year + 1):
         plots.heatmap(pdates_df, abdates_df, year)
-    print('end of execution. The plots are in sub folder plots')
+    print('End of execution. \nThe plots are in sub folder plots')
     exit(0)
