@@ -17,10 +17,11 @@ and the absent dates are extracted from my Google calendar "absent from Tartegni
      19-5-2019
 """
 
-import pandas as pd
+from datetime import date
+
 import calplot
 import matplotlib.pyplot as plt
-from datetime import date
+import pandas as pd
 
 import glib
 
@@ -71,7 +72,7 @@ class CarParkPlot:
         p_now = date.today().isoformat()
         yearcount = cars_df.groupby('year')['year'].count().to_frame('count')
         yearcount.plot(kind='bar', title=(f'Parking days per year up to {p_now}'))
-        plt.show()
+        # plt.show()
         plt.savefig('plots/years_count.png')
         plt.close()
         return
@@ -80,17 +81,19 @@ class CarParkPlot:
 
     def heatmap(self, car, vac, yr):
         plt.figure(figsize=(15, 6))
-        car['const'] = .9
-        vac['const'] = .6
+        car['const'] = .1
+        vac['const'] = .9
         events = pd.concat([vac[['date', 'const']], car[['date', 'const']]], axis=0)
         dates = pd.to_datetime(events['date'].values)  # convert dates to datetime. Values to be used as index
         ev = pd.Series(events['const'].values, index=dates)  # calmap expects a Pd.Series with datetime index
-        # calplot.calplot(ev, year=yr)
-        calplot.calplot(ev)
+        ev_year = ev[f'{yr}']
+        calplot.calplot(ev_year, yearcolor='black', colorbar=False)
         ccount = len(car[car['year'] == yr])
         vcount = len(vac[vac['year'] == yr])
-        plt.title(f"Year {yr} \n Parking days observed: {ccount},  (Absent {vcount} days)")
-        plt.show()
+        title = f'Year {yr} \n Parking days observed: {ccount}' if vcount == 0 else \
+                f'Year {yr}  Parking days observed: {ccount}, (Absent: {vcount} days)'
+        plt.title(title)
+        # plt.show()
         file_name = f'plots/calendar_{yr}.png'
         plt.savefig(file_name)
         plt.close()
@@ -110,7 +113,7 @@ if __name__ == "__main__":
     """
 
     # constants
-    START_YEAR = 2018
+    START_YEAR = 2016
     CALENDAR = 'Not in Tartegnin'
     PARKING = 'Parking voitures'
 
