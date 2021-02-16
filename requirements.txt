@@ -1,4 +1,3 @@
-beautifulsoup4==4.9.3
 cachetools==4.2.1
 calplot==0.1.6.2
 certifi==2020.12.5
